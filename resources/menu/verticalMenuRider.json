@@ -1,0 +1,16 @@
+{
+  "menu": [
+    {
+      "url": "rider/dashboard",
+      "name": "Dashboard",
+      "icon": "menu-icon ti tabler-smart-home",
+      "slug": "rider.dashboard"
+    },
+    {
+      "url": "rider/schedule",
+      "name": "Mi Horario",
+      "icon": "menu-icon ti tabler-clock",
+      "slug": "rider.schedule.index"
+    }
+  ]
+}
