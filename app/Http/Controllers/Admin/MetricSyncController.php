@@ -14,17 +14,17 @@ class MetricSyncController extends Controller
     public function sync()
     {
         Log::info("🚀 Iniciando sincronización de métricas...");
-        $result = ['processed' => 0, 'imported' => 0, 'errors' => []];
+        $result = ['processed' => 0, 'updated' => 0, 'created' => 0, 'errors' => []];
 
         try {
             $response = Http::get($this->csvUrl);
             if (!$response->ok()) {
+                Log::error("❌ No se pudo obtener el CSV. Código de estado: " . $response->status());
                 return response()->json(['error' => '❌ No se pudo obtener el CSV.'], 500);
             }
 
             $lines = array_filter(array_map('trim', explode("\n", $response->body())));
             $headers = str_getcsv(strtolower(array_shift($lines)));
-            $lastDate = Metric::max('fecha');
 
             foreach ($lines as $i => $line) {
                 $row = str_getcsv($line);
@@ -33,16 +33,18 @@ class MetricSyncController extends Controller
                 $data = @array_combine($headers, $row);
                 if (!$data || empty($data['courier id'])) continue;
 
+                // CORRECCIÓN: Manejo de formato de fecha
                 try {
                     $date = Carbon::createFromFormat('d/m/Y', trim($data['start date']));
-                } catch (\Exception $e) { continue; }
+                } catch (\Exception $e) {
+                    $result['errors'][] = "Error de formato de fecha en la línea " . ($i + 2) . ": " . $e->getMessage();
+                    continue;
+                }
 
-                if ($lastDate && $date->lte(Carbon::parse($lastDate))) continue;
-
-                $result['processed']++;
                 $toFloat = fn($v) => floatval(str_replace(['_','%', ','], ['', '', '.'], $v));
 
-                Metric::create([
+                // Mapeo dinámico de campos para la base de datos
+                $metricData = [
                     'courier_id' => trim($data['courier id']),
                     'transport' => $data['transport'] ?? null,
                     'fecha' => $date->format('Y-m-d'),
@@ -51,17 +53,40 @@ class MetricSyncController extends Controller
                     'cancelados' => $toFloat($data['% canceled orders'] ?? 0),
                     'reasignaciones' => $toFloat($data['% reassignments'] ?? 0),
                     'no_show' => $toFloat($data['%no show'] ?? 0),
+                    // CORRECCIÓN: Nombre de campo en el CSV
                     'horas' => $toFloat($data['h/ras'] ?? 0),
                     'ratio_entrega' => $toFloat($data['ratio de entrga'] ?? 0),
                     'tiempo_promedio' => $toFloat($data['cdt (min)=< 20min'] ?? 0),
-                ]);
-                $result['imported']++;
+                    // Si agregas nuevos campos en el CSV, inclúyelos aquí
+                    // 'nuevo_campo' => $data['nombre del campo en el csv'] ?? null,
+                ];
+
+                $result['processed']++;
+
+                // LÓGICA CLAVE: Usar updateOrCreate para idempotencia
+                $metric = Metric::updateOrCreate(
+                    ['courier_id' => $metricData['courier_id'], 'fecha' => $metricData['fecha']],
+                    $metricData
+                );
+
+                if ($metric->wasRecentlyCreated) {
+                    $result['created']++;
+                } else {
+                    $result['updated']++;
+                }
             }
-            return response()->json(['success' => '✅ Sincronización completada.', 'nuevos' => $result['imported']]);
+
+            Log::info("✅ Sincronización completada. Nuevos: {$result['created']}, Actualizados: {$result['updated']}, Errores: " . count($result['errors']));
+            return response()->json([
+                'success' => '✅ Sincronización completada.',
+                'nuevos' => $result['created'],
+                'actualizados' => $result['updated'],
+                'errores' => $result['errors']
+            ]);
 
         } catch (\Exception $e) {
-            Log::error("Error en sincronización: " . $e->getMessage());
-            return response()->json(['error' => 'Error en sincronización: ' . $e->getMessage()], 500);
+            Log::error("Error crítico en sincronización: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
+            return response()->json(['error' => '❌ Error crítico en sincronización. ' . $e->getMessage()], 500);
         }
     }
 }

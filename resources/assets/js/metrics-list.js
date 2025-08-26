@@ -27,11 +27,38 @@ document.addEventListener('DOMContentLoaded', function () {
   const kpiCosto = document.getElementById('kpi-costo-total');
   const kpiUtilidad = document.getElementById('kpi-utilidad');
 
+  // CORRECCIÓN: Configuración de la localización de flatpickr
   const fp = flatpickr(dateRangePicker, {
     mode: 'range',
     dateFormat: 'Y-m-d',
-    locale: 'es',
-    rangeSeparator: ' a '
+    locale: {
+      rangeSeparator: ' a ',
+      weekdays: {
+        shorthand: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+        longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+      },
+      months: {
+        shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        longhand: [
+          'Enero',
+          'Febrero',
+          'Marzo',
+          'Abril',
+          'Mayo',
+          'Junio',
+          'Julio',
+          'Agosto',
+          'Septiembre',
+          'Octubre',
+          'Noviembre',
+          'Diciembre'
+        ]
+      },
+      ordinal: function () {
+        return '';
+      },
+      firstDayOfWeek: 1
+    }
   });
 
   function getFilters(page = 1) {
@@ -42,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
       city: cityFilter.value,
       transport: transportFilter.value,
       courier_id: courierIdFilter.value,
-      rider_name: riderNameFilter.value, // NUEVO
+      rider_name: riderNameFilter.value,
       weekday: weekdayFilter.value,
       cost_per_order: costOrderFilter.value,
       cost_per_hour: costHourFilter.value,
@@ -63,10 +90,10 @@ document.addEventListener('DOMContentLoaded', function () {
       ]);
 
       if (!metricsRes.ok) {
-        throw new Error(`Error ${metricsRes.status}: No se pudieron cargar las métricas. `);
+        throw new Error(`Error ${metricsRes.status}: No se pudieron cargar las métricas.`);
       }
       if (!kpisRes.ok) {
-        throw new Error(`Error ${kpisRes.status}: No se pudieron cargar los KPIs. `);
+        throw new Error(`Error ${kpisRes.status}: No se pudieron cargar los KPIs.`);
       }
 
       const metricsData = await metricsRes.json();

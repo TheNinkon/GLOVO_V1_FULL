@@ -44,6 +44,15 @@
       "name": "Métricas",
       "icon": "menu-icon ti tabler-report-analytics",
       "slug": "admin.metrics.index"
+    },
+    {
+      "menuHeader": "Finanzas"
+    },
+    {
+      "url": "admin/prefacturas",
+      "name": "Prefacturación",
+      "icon": "menu-icon ti tabler-file-dollar",
+      "slug": "admin.prefacturas.index"
     }
   ]
 }

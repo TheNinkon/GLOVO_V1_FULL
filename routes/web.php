@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\AccountController as AdminAccountController;
 use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
 use App\Http\Controllers\Admin\CoverageController;
 use App\Http\Controllers\Admin\RiderStatusController;
+use App\Http\Controllers\Admin\PrefacturaController; // ¡Nuevo controlador!
 
 // --- Admin Métricas ---
 use App\Http\Controllers\Admin\MetricController;
@@ -87,12 +88,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('rider-status.index');
 
         // --- Métricas de Operación ---
-        // Nota: el prefijo name('admin.') ya está aplicado al grupo, por lo que
-        // estos nombres quedan como admin.metrics.index, admin.metrics.list, etc.
         Route::get('/metrics', [MetricController::class, 'index'])->name('metrics.index');
         Route::get('/metrics/list', [MetricController::class, 'list'])->name('metrics.list');
         Route::get('/metrics/kpis', [MetricController::class, 'kpis'])->name('metrics.kpis');
         Route::post('/metrics/sync', [MetricSyncController::class, 'sync'])->name('metrics.sync');
+
+        // --- Prefacturación (Nuevo Módulo) ---
+    Route::get('/prefacturas', [PrefacturaController::class, 'index'])->name('prefacturas.index');
+    Route::get('/prefacturas/{prefactura}', [PrefacturaController::class, 'show'])->name('prefacturas.show');
+    Route::post('/prefacturas', [PrefacturaController::class, 'store'])->name('prefacturas.store');
+    Route::post('/prefacturas/items/{item}/assign', [PrefacturaController::class, 'assignRider'])->name('prefacturas.assignRider');
+    Route::post('/prefacturas/assignments/{assignment}/status', [PrefacturaController::class, 'updateAssignmentStatus'])->name('prefacturas.assignments.updateStatus');
     });
 });
 
