@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Metric extends Model
 {
     use HasFactory;
 
-    // Nombre de la tabla basado en tu migración
-    protected $table = 'glovo_metrics';
+    protected $table = 'glovo_metrics'; // Asegurar que apunta a la tabla correcta
 
     protected $fillable = [
         'courier_id',
@@ -24,10 +24,13 @@ class Metric extends Model
         'horas',
         'ratio_entrega',
         'tiempo_promedio',
-        'ineligible'
     ];
 
-    protected $casts = [
-        'fecha' => 'date',
-    ];
+    /**
+     * Define la relación: Una métrica de Glovo pertenece a una cuenta.
+     */
+    public function account(): HasOne
+    {
+        return $this->hasOne(Account::class, 'courier_id', 'courier_id');
+    }
 }

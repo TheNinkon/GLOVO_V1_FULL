@@ -59,10 +59,17 @@ class Rider extends Authenticatable
 
     /**
      * Define la relación: Un Rider tiene muchos Schedules (horas reservadas).
-     * Este es el método que faltaba.
      */
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    /**
+     * Define la relación: Un Rider tiene muchas asignaciones de prefactura.
+     */
+    public function prefacturaAssignments(): HasMany
+    {
+        return $this->hasMany(PrefacturaAssignment::class);
     }
 }

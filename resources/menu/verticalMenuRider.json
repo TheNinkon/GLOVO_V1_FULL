@@ -7,10 +7,10 @@
       "slug": "rider.dashboard"
     },
     {
-      "url": "rider/schedule",
-      "name": "Mi Horario",
-      "icon": "menu-icon ti tabler-clock",
-      "slug": "rider.schedule.index"
+      "url": "rider/metrics",
+      "name": "Mis Métricas",
+      "icon": "menu-icon ti tabler-report-analytics",
+      "slug": "rider.metrics.index"
     }
   ]
 }
